@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: waf
+  namespace: whoami
+spec:
+  plugin:
+    coraza:
+      crsEnabled: true
+      directives:
+        - SecGeoLookupDb /geodb/GeoLite2-Country.mmdb
+        - SecRule REMOTE_ADDR "@geoLookup" "chain,id:22,drop,msg:'Non-JP IP address'"
+        - SecRule GEO:COUNTRY_CODE "!@streq JP"
+        # - Include /wafrules/crs.conf
+        # - Include @owasp_crs/REQUEST-910-IP-REPUTATION.conf
