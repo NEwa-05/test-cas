@@ -20,10 +20,36 @@ kubectl create secret generic hub-license --from-literal=token="${HUB_TOKEN}" -n
 helm upgrade --install traefik traefik/traefik --create-namespace --namespace traefik --values hub/hub-values.yaml
 ```
 
-## Deploy Apereo CAS
+## Deploy Keycloak
+
+### Create keycloak namespace
 
 ```bash
-helm upgrade --install cas /Users/newa/Documents/traefik/git/cas-overlay-template/helm/cas-server --create-namespace --namespace cas --values cas/cas-values.yaml
+kubectl create ns keycloak
+```
+
+### Create keycloak admin password
+
+```bash
+kubectl create secret generic keycloak-admin --from-literal=password="${KEYCLOAK_PASSWORD}" -n keycloak
+```
+
+### Create configmap for Traefik realm
+
+```bash
+envsubst < keycloak/realm-cm.yaml | kubectl apply -f -
+```
+
+### Set ingressRoute for keycloak
+
+```bash
+envsubst < keycloak/ingress.yaml | kubectl apply -f -
+```
+
+### Install Keycloak with realm configuration
+
+```bash
+helm upgrade --install keycloak bitnami/keycloak --create-namespace --namespace keycloak --set keycloakConfigCli.extraEnvVars\[0\].name="KEYCLOAK_URL" --set keycloakConfigCli.extraEnvVars\[0\].value="https://keycloak.${CLUSTERNAME}.${DOMAINNAME}" --values keycloak/keycloak-values.yaml
 ```
 
 ## Deploy app
@@ -40,19 +66,4 @@ kubectl create ns whoami
 kubectl apply -f whoami/whoami.yaml
 envsubst < whoami/middlewares.yaml | kubectl apply -f -
 envsubst < whoami/ingress.yaml | kubectl apply -f -
-```
-
-
-## Deploy Consul
-
-```bash
-kubectl create consul
-```
-
-```bash
-helm upgrade -i --values consul/values.yaml consul hashicorp/consul --create-namespace --namespace consul
-```
-
-```bash
-envsubst < consul/ingress.yaml | kubectl apply -f -
 ```

@@ -62,3 +62,9 @@ hub:
   token: hub-license
   apimanagement:
     enabled: false
+experimental:
+  abortOnPluginFailure: false
+  plugins:
+    cas-auth:
+      moduleName: "github.com/xezpeleta/traefik-cas-auth"
+      version: "v0.0.16"

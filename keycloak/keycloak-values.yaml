@@ -1,0 +1,57 @@
+image:
+  registry: docker.io
+  repository: bitnami/keycloak
+  tag: 24.0.5-debian-12-r3
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 500m
+  limits:
+    memory: 512Mi
+    cpu: 500m
+auth:
+  adminUser: admin
+  existingSecret: "keycloak-admin"
+  passwordSecretKey: "password"
+service:
+  type: ClusterIP
+proxyHeaders: xforwarded
+## use CAS plugin for Keycloak: https://github.com/jacekkow/keycloak-protocol-cas
+## To load plugin: https://github.com/bitnami/charts/issues/15930#issuecomment-2478437680
+initContainers: |
+    - name: downloader
+      image: alpine/curl
+      imagePullPolicy: IfNotPresent
+      args: ["-OL", "--output-dir", "/emptydir/app-providers-dir/", "https://github.com/jacekkow/keycloak-protocol-cas/releases/download/24.0.5/keycloak-protocol-cas-24.0.5.jar"]
+      volumeMounts:
+        - name: empty-dir
+          mountPath: /emptydir
+keycloakConfigCli:
+  enabled: true
+  image:
+    registry: docker.io
+    repository: bitnami/keycloak-config-cli
+    tag: 5.12.0-debian-12-r6
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 100m
+  existingConfigmap: "keycloak-traefik-realm"
+  cleanupAfterFinished:
+    enabled: true
+  extraEnvVars:
+  - name: JAVA_OPTS_APPEND
+    value: "-server -Xms256m -Xmx384m"
+  - name: KEYCLOAK_AVAILABILITYCHECK_TIMEOUT
+    value: "10s"
+postgresql:
+  resources:
+    requests:
+      memory: 192Mi
+      cpu: 150m
+    limits:
+      memory: 192Mi
+      cpu: 150m

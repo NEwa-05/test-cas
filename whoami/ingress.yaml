@@ -14,23 +14,7 @@ spec:
         - name: whoami
           port: 80
       middlewares:
-        - name: waf
+        - name: whoami-cas
+        # - name: whoami-oidc
   tls:
     certResolver: le
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: whoami
-#   namespace: whoami
-# spec:
-#   rules:
-#   - http:
-#       paths:
-#       - path: /
-#         pathType: Prefix
-#         backend:
-#           service:
-#             name: whoami
-#             port:
-#               number: 80

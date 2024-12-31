@@ -32,8 +32,6 @@ kind: Service
 metadata:
   name: whoami
   namespace: whoami
-  annotations:
-    traefik.ingress.kubernetes.io/service.nativelb: "false"
   labels:
     app: whoami
 spec:
